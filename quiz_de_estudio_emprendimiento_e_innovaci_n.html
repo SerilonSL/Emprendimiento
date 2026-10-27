@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interactivo - Emprendimiento e Innovación</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-indigo-600 to-indigo-400 text-white p-2.5 rounded-xl shadow-md">
+                    <i class="fa-solid fa-lightbulb text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
+                        Emprendimiento e Innovación
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Plataforma de Estudio - 60 Preguntas</p>
+                </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center space-x-3">
+                <button id="bookmarkFilterBtn" onclick="toggleBookmarkedFilter()" class="relative p-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Ver guardadas para repasar">
+                    <i class="fa-solid fa-bookmark text-amber-500 text-lg"></i>
+                    <span id="bookmarkBadge" class="hidden absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                </button>
+                <button id="themeToggle" onclick="toggleDarkMode()" class="p-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-moon text-lg dark:hidden"></i>
+                    <i class="fa-solid fa-sun text-lg hidden dark:block text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+
+        <!-- Quiz Config Panel (Mode & Module Selection) -->
+        <section id="configPanel" class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700/60 mb-6 transition">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <!-- Select Module -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-layer-group mr-1.5"></i> Módulo de Estudio
+                    </label>
+                    <select id="moduleSelect" onchange="restartQuiz()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                        <option value="all">Todos los Módulos (60 Preguntas)</option>
+                        <option value="1">Módulo 1: Fundamentos y Entorno (12 Q)</option>
+                        <option value="2">Módulo 2: Planificación e Ideas (12 Q)</option>
+                        <option value="3">Módulo 3: Formalización y Contabilidad (12 Q)</option>
+                        <option value="4">Módulo 4: Marketing y Costos (12 Q)</option>
+                        <option value="5">Módulo 5: Capital Humano y Previsión (12 Q)</option>
+                    </select>
+                </div>
+
+                <!-- Select Quiz Mode -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-sliders mr-1.5"></i> Modo de Aprendizaje
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btnModePractice" onclick="setMode('practice')" class="py-2 px-3 rounded-xl text-xs font-semibold border transition flex items-center justify-center space-x-1.5 bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                            <span>Práctica</span>
+                        </button>
+                        <button id="btnModeExam" onclick="setMode('exam')" class="py-2 px-3 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-stopwatch"></i>
+                            <span>Examen</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-bolt mr-1.5"></i> Acciones
+                    </label>
+                    <div class="flex space-x-2">
+                        <button onclick="restartQuiz()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-2 shadow-sm">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>Reiniciar Quiz</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Tracker Bar -->
+        <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700/60 mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-2 text-sm">
+                <div class="flex items-center space-x-4">
+                    <span id="questionCounter" class="font-bold text-slate-700 dark:text-slate-200">Pregunta 1 de 60</span>
+                    <span id="scoreTracker" class="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 font-semibold text-slate-600 dark:text-slate-300">
+                        Aciertos: <span id="correctCount" class="text-emerald-500">0</span> | Errores: <span id="incorrectCount" class="text-rose-500">0</span>
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="timerContainer" class="hidden items-center space-x-1.5 text-amber-500 font-mono font-bold text-sm bg-amber-500/10 px-3 py-1 rounded-lg">
+                        <i class="fa-solid fa-clock"></i>
+                        <span id="timerText">00:00</span>
+                    </div>
+                    <span id="progressPercent" class="font-semibold text-indigo-600 dark:text-indigo-400">0%</span>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                <div id="progressBar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </section>
+
+        <!-- Question Display Card -->
+        <section id="questionCard" class="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700/60 flex-1 flex flex-col justify-between relative transition">
+            
+            <!-- Question Top Info -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <span id="moduleBadge" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300">
+                        Módulo 1
+                    </span>
+                    <button id="bookmarkBtn" onclick="toggleBookmarkCurrent()" class="text-slate-400 hover:text-amber-500 transition text-lg p-1" title="Marcar para repasar">
+                        <i id="bookmarkIcon" class="fa-regular fa-bookmark"></i>
+                    </button>
+                </div>
+
+                <!-- Question Text -->
+                <h2 id="questionText" class="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 mb-6 leading-relaxed">
+                    Cargando pregunta...
+                </h2>
+
+                <!-- Options List -->
+                <div id="optionsContainer" class="space-y-3">
+                    <!-- Dynamic Options HTML -->
+                </div>
+            </div>
+
+            <!-- Feedback Box (Practice Mode) -->
+            <div id="feedbackBox" class="hidden mt-6 p-4 rounded-xl border transition">
+                <div class="flex items-start space-x-3">
+                    <i id="feedbackIcon" class="fa-solid text-xl mt-0.5"></i>
+                    <div>
+                        <h4 id="feedbackTitle" class="font-bold text-sm mb-1"></h4>
+                        <p id="feedbackExplanation" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="mt-8 pt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+                <button id="prevBtn" onclick="prevQuestion()" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Anterior
+                </button>
+                <div class="flex space-x-2">
+                    <button id="nextBtn" onclick="nextQuestion()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm transition shadow-sm flex items-center">
+                        <span>Siguiente</span> <i class="fa-solid fa-arrow-right ml-1.5"></i>
+                    </button>
+                    <button id="finishExamBtn" onclick="finishExam()" class="hidden px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm transition shadow-sm flex items-center">
+                        <i class="fa-solid fa-check-double mr-1.5"></i> Finalizar Examen
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Exam Results Panel (Initially Hidden) -->
+        <section id="resultsPanel" class="hidden bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700/60">
+            <div class="text-center max-w-lg mx-auto mb-8">
+                <div id="resultIcon" class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl bg-indigo-100 text-indigo-600 dark:bg-indigo-900/60 dark:text-indigo-400">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">¡Evaluación Finalizada!</h2>
+                <p id="resultSubtitle" class="text-slate-500 dark:text-slate-400 text-sm">Has completado el cuestionario de estudio.</p>
+                
+                <!-- Score Breakdown -->
+                <div class="grid grid-cols-3 gap-4 my-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                    <div>
+                        <span class="block text-xs font-semibold text-slate-400 uppercase">Puntaje</span>
+                        <span id="finalScorePercent" class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">0%</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-slate-400 uppercase">Aciertos</span>
+                        <span id="finalScoreCorrect" class="text-2xl font-extrabold text-emerald-500">0</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-slate-400 uppercase">Tiempo</span>
+                        <span id="finalScoreTime" class="text-2xl font-extrabold text-amber-500">00:00</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-center space-x-3">
+                    <button onclick="restartQuiz()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm transition">
+                        <i class="fa-solid fa-rotate-right mr-1.5"></i> Intentar Nuevamente
+                    </button>
+                    <button onclick="toggleReviewMode()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Revisar Respuestas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detailed Module Breakdown -->
+            <div id="moduleBreakdown" class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-6">
+                <h3 class="font-bold text-sm text-slate-500 uppercase tracking-wider mb-4">Rendimiento por Módulo</h3>
+                <div id="moduleStatsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Dynamic breakdown stats -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-500 dark:text-slate-400">
+        Emprendimiento e Innovación &bull; Preparación de Exámenes y Evaluación Final
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // --- 60 QUESTIONS DATABASE ---
+        const rawQuestions = [
+            // MÓDULO 1: Fundamentos y Entorno (12 Preguntas)
+            {
+                module: 1,
+                question: "¿Cuál es la definición de emprendimiento según la Comisión Europea (Unión Europea)?",
+                options: [
+                    "Capacidad de convertir ideas en acción mediante la creatividad, innovación y gestión de riesgos.",
+                    "Proceso exclusivo de creación de grandes empresas de base tecnológica.",
+                    "Acción de comprar y vender productos en un mercado regulado.",
+                    "Estrategia financiera para maximizar únicamente las utilidades de accionistas."
+                ],
+                answer: 0,
+                explanation: "La UE define el emprendimiento como una competencia clave transversal que abarca la creatividad, la innovación, la asunción de riesgos y la habilidad para planificar y gestionar proyectos."
+            },
+            {
+                module: 1,
+                question: "En el contexto emprendedor, ¿cuál es la diferencia clave entre Actitud y Aptitud?",
+                options: [
+                    "Actitud es la predisposición y motivación mental; Aptitud es el conocimiento técnico y habilidad práctica.",
+                    "Actitud es el nivel de estudio universitario; Aptitud es la personalidad.",
+                    "Ambas son sinónimos exactos en la legislación chilena.",
+                    "Actitud es el capital disponible; Aptitud es la maquinaria utilizada."
+                ],
+                answer: 0,
+                explanation: "La Actitud refiere al 'querer hacer' (disposición, resiliencia y motivación), mientras que la Aptitud refiere al 'saber hacer' (conocimientos, capacidades técnicas y destrezas)."
+            },
+            {
+                module: 1,
+                question: "¿Qué caracteriza a un Intraemprendedor?",
+                options: [
+                    "Desarrolla proyectos innovadores dentro de una empresa o institución existente.",
+                    "Crea una ONG dedicada exclusivamente al medio ambiente.",
+                    "Compra franquicias internacionales para operarlas de forma independiente.",
+                    "Persona natural que vende productos informales en la vía pública."
+                ],
+                answer: 0,
+                explanation: "Un intraemprendedor aplica el espíritu y la metodología emprendedora dentro del marco y estructura de una empresa ya establecida."
+            },
+            {
+                module: 1,
+                question: "¿Cuál es el objetivo principal de un Emprendedor Social?",
+                options: [
+                    "Generar valor e impacto social positivo resolviendo problemas de la comunidad.",
+                    "Maximizar las ganancias monetarias distribuyendo dividendos a inversionistas.",
+                    "Evadir impuestos mediante fundaciones sin fines de lucro.",
+                    "Competir en la bolsa de valores internacional."
+                ],
+                answer: 0,
+                explanation: "El emprendimiento social busca transformar o mitigar problemáticas sociales/ambientales, priorizando el impacto comunitarios sobre la mera rentabilidad financiera."
+            },
+            {
+                module: 1,
+                question: "¿Qué diferencia a un Emprendedor por Oportunidad de uno por Necesidad?",
+                options: [
+                    "El de oportunidad detecta un hueco rentable en el mercado; el de necesidad emprende por falta de alternativas laborales.",
+                    "El de necesidad tiene siempre más capital inicial que el de oportunidad.",
+                    "El de oportunidad solo opera en el sector público.",
+                    "No existe diferencia; ambos tienen el mismo porcentaje de fracaso a largo plazo."
+                ],
+                answer: 0,
+                explanation: "El emprendedor por oportunidad busca explotar un nicho desatendido con planificación; el por necesidad surge apresuradamente ante la urgencia de generar ingresos inmediatos."
+            },
+            {
+                module: 1,
+                question: "¿Qué mide la variable 'P' en el análisis de macroentorno PESTEL?",
+                options: [
+                    "Factores Políticos (estabilidad gubernamental, políticas fiscales y regulaciones).",
+                    "Factores Previsionales de los trabajadores.",
+                    "Factores de Producción técnica.",
+                    "Factores de Publicidad y Marketing."
+                ],
+                answer: 0,
+                explanation: "PESTEL evalúa el macroentorno: Político, Económico, Sociocultural, Tecnológico, Ecológico/Ambiental y Legal."
+            },
+            {
+                module: 1,
+                question: "Dentro del PESTEL, la tasa de inflación, el tipo de cambio y el desempleo corresponden a factores de tipo:",
+                options: [
+                    "Económicos.",
+                    "Tecnológicos.",
+                    "Legales.",
+                    "Socioculturales."
+                ],
+                answer: 0,
+                explanation: "Variables como IPC, inflación, tasa de interés y desempleo pertenecen al vector Económico del PESTEL."
+            },
+            {
+                module: 1,
+                question: "¿Qué son los Recursos Materiales en una organización?",
+                options: [
+                    "Bienes tangibles como maquinaria, herramientas, instalaciones y materia prima.",
+                    "El dinero en efectivo depositado en la cuenta corriente.",
+                    "El software de gestión informático y las patentes registradas.",
+                    "El nivel de motivación del equipo de ventas."
+                ],
+                answer: 0,
+                explanation: "Los recursos materiales abarcan la infraestructura física, equipos y suministros tangibles necesarios para producir."
+            },
+            {
+                module: 1,
+                question: "¿Cuál de los siguientes es considerado un Recurso Técnico o Tecnológico?",
+                options: [
+                    "Software, patentes, marcas registradas y sistemas de información.",
+                    "El capital aportado por los socios fundadores.",
+                    "Las mesas y sillas de la oficina principal.",
+                    "Los contratos de trabajo firmado por el personal."
+                ],
+                answer: 0,
+                explanation: "Los recursos técnicos incluyen activos intangibles, conocimientos especializados (Know-How), software y propiedad intelectual."
+            },
+            {
+                module: 1,
+                question: "Los Recursos Financieros de un emprendimiento se componen de:",
+                options: [
+                    "Capital propio, créditos bancarios, subsidized e ingresos por ventas.",
+                    "Únicamente subsidios estatales no reembolsables.",
+                    "Únicamente el sueldo bruto de los empleados.",
+                    "Las maquinarias amortizadas en el balance."
+                ],
+                answer: 0,
+                explanation: "Los recursos financieros son los fondos líquidos o disponibles (efectivo, préstamos, inversiones) para operar y financiar proyectos."
+            },
+            {
+                module: 1,
+                question: "En la evaluación del microentorno (Cinco Fuerzas de Porter), el poder de negociación de los clientes aumenta cuando:",
+                options: [
+                    "Existen muchos proveedores alternativos y los productos son estandarizados.",
+                    "El producto es único e insustituible en el mercado.",
+                    "Hay escasez total del bien ofertado.",
+                    "El costo de cambiar de proveedor es extremadamente alto."
+                ],
+                answer: 0,
+                explanation: "Si hay alta oferta y poca diferenciación, los compradores ejercen mayor poder exigiendo mejores precios y condiciones."
+            },
+            {
+                module: 1,
+                question: "¿Qué representa la 'E' de Entorno Ecológico en el modelo PESTEL?",
+                options: [
+                    "Leyes de protección ambiental, huella de carbono y cambio climático.",
+                    "Educación universitaria del equipo fundador.",
+                    "Estructura organizacional interna.",
+                    "Estrategias de exportación e importación."
+                ],
+                answer: 0,
+                explanation: "El factor Ecológico aborda la normativa ambiental, sustentabilidad, tratamiento de residuos y riesgos climáticos."
+            },
+
+            // MÓDULO 2: Planificación e Ideas (12 Preguntas)
+            {
+                module: 2,
+                question: "¿En qué consiste la técnica de creatividad 'Delphi'?",
+                options: [
+                    "Consulta sistemática y anónima a un panel de expertos en varias rondas para lograr consenso.",
+                    "Reunión masiva donde todos gritan ideas al mismo tiempo sin filtro.",
+                    "Análisis de competidores mediante observación encubierta.",
+                    "Asociación libre usando imágenes de animales y vegetales."
+                ],
+                answer: 0,
+                explanation: "El método Delphi recopila opiniones anónimas de expertos en sucesivas rondas para llegar a conclusiones validadas."
+            },
+            {
+                module: 2,
+                question: "La técnica de creatividad 'Da Vinci' o Matriz Morfológica busca asociar:",
+                options: [
+                    "Atributos y variables del problema combinados en una rejilla o matriz para hallar soluciones novedosas.",
+                    "Personajes históricos famosos con marcas comerciales del siglo XXI.",
+                    "Sueldos de trabajadores con su nivel de productividad.",
+                    "Costos fijos con costos variables de fabricación."
+                ],
+                answer: 0,
+                explanation: "La matriz de Da Vinci descompone el objeto o problema en características clave y explora combinaciones sistemáticas."
+            },
+            {
+                module: 2,
+                question: "¿Cuál es el enfoque de la técnica de 'Galería de Famosos' en ideación?",
+                options: [
+                    "Adoptar la perspectiva o personalidad de un personaje célebre para resolver un desafío.",
+                    "Contratar influencers costosos para promocionar la idea inicial.",
+                    "Escribir una biografía ficticia sobre los clientes.",
+                    "Dibujar caricaturas de la competencia."
+                ],
+                answer: 0,
+                explanation: "Plantea la pregunta: '¿Cómo resolvería este problema Steve Jobs, Marie Curie o Einstein?', forzando la mente a romper sesgos."
+            },
+            {
+                module: 2,
+                question: "¿Qué diferencia sustancial existe entre un 'Plan de Negocios' y un 'Plan de Trabajo'?",
+                options: [
+                    "El Plan de Negocios analiza la viabilidad comercial y financiera; el Plan de Trabajo organiza tareas, responsables y plazos de ejecución.",
+                    "El Plan de Trabajo es solo para empresas con más de 500 trabajadores.",
+                    "El Plan de Negocios es un documento informal escrito a mano.",
+                    "Son idénticos y se entregan al SII al iniciar actividades."
+                ],
+                answer: 0,
+                explanation: "El Plan de Negocios valida la oportunidad estratégica y financiera; el Plan de Trabajo es la hoja de ruta operativa cronológica."
+            },
+            {
+                module: 2,
+                question: "¿Para qué sirve principalmente la Carta Gantt?",
+                options: [
+                    "Planificar y calendarizar actividades del proyecto mostrando su duración y secuencia en el tiempo.",
+                    "Calcular el impuesto a la renta anual de la empresa.",
+                    "Diseñar el logotipo y los colores institucionales.",
+                    "Registrar la entrada y salida diaria del personal."
+                ],
+                answer: 0,
+                explanation: "La Carta Gantt es una herramienta gráfica que ilustra las fechas de inicio y término de cada tarea en un horizonte temporal."
+            },
+            {
+                module: 2,
+                question: "¿Cuántos bloques compone el Modelo Canvas desarrollado por Alexander Osterwalder?",
+                options: [
+                    "9 bloques interconectados.",
+                    "5 bloques financieros.",
+                    "12 bloques operativos.",
+                    "4 bloques de marketing."
+                ],
+                answer: 0,
+                explanation: "El Business Model Canvas sintetiza el modelo de negocio en 9 bloques fundamentales."
+            },
+            {
+                module: 2,
+                question: "En el Modelo Canvas, el bloque 'Propuesta de Valor' define:",
+                options: [
+                    "El conjunto de productos/servicios que crean valor para un segmento específico resolviendo un problema.",
+                    "El precio exacto en pesos chilenos que se cobrará por cada ítem.",
+                    "Los canales de distribución física.",
+                    "Los préstamos que se solicitarán al banco."
+                ],
+                answer: 0,
+                explanation: "La Propuesta de Valor es la razón por la cual los clientes eligen una empresa sobre otra; soluciona dolores o satisface necesidades."
+            },
+            {
+                module: 2,
+                question: "¿Qué describe el bloque 'Segmentos de Clientes' en el Canvas?",
+                options: [
+                    "Los diferentes grupos de personas u organizaciones a los que la empresa se dirige.",
+                    "Los tipos de proveedores de materia prima.",
+                    "Los socios clave que aportan financiamiento.",
+                    "Los empleados contratados en el departamento de ventas."
+                ],
+                answer: 0,
+                explanation: "Define hacia quién se orienta el valor creado, divididos por características geográficas, demográficas o comportamentales."
+            },
+            {
+                module: 2,
+                question: "En Canvas, los 'Canales' abarcan cómo la empresa se comunica y llega a sus clientes para entregar la propuesta de valor en etapas de:",
+                options: [
+                    "Información, Evaluación, Compra, Entrega y Postventa.",
+                    "Contratación, Despido y Liquidación.",
+                    "Crédito, Débito y Transferencia bancaria.",
+                    "Diseño, Fabricación y Ensamblaje."
+                ],
+                answer: 0,
+                explanation: "Los canales integran la difusión, venta, logística de entrega y atención posterior al cliente."
+            },
+            {
+                module: 2,
+                question: "¿Qué incluye el bloque 'Estructura de Costos' en el modelo Canvas?",
+                options: [
+                    "Los gastos más importantes en los que se incurre para hacer funcionar el modelo de negocios.",
+                    "Las fuentes de ingresos provenientes de los clientes.",
+                    "El margen de ganancia neto del dueño.",
+                    "Las tarifas impositivas vigentes."
+                ],
+                answer: 0,
+                explanation: "Detalla los costos fijos y variables necesarios para crear y entregar valor, mantener relaciones y generar ingresos."
+            },
+            {
+                module: 2,
+                question: "La técnica de creativad 'Flora y Fauna' utiliza la biónica y la naturaleza para:",
+                options: [
+                    "Inspirarse en comportamientos, estructuras y adaptaciones biológicas para resolver problemas mecánicos u organizacionales.",
+                    "Plantar árboles por cada venta realizada.",
+                    "Calcular la huella ecológica de la fábrica.",
+                    "Comprar animales para decorar la recepción de la empresa."
+                ],
+                answer: 0,
+                explanation: "Consiste en analogías biológicas (biónica/biomimética) observando cómo la naturaleza resuelve problemas de eficiencia y estructura."
+            },
+            {
+                module: 2,
+                question: "En el Canvas, el bloque 'Actividades Clave' se refiere a:",
+                options: [
+                    "Las acciones más indispensables que la empresa debe realizar para operar con éxito y entregar su propuesta.",
+                    "Las actividades de esparcimiento y vacaciones del personal.",
+                    "Los trámites notariales anuales.",
+                    "Las publicaciones secundarias en redes sociales."
+                ],
+                answer: 0,
+                explanation: "Son los procesos medulares (ej: producción, resolución de problemas, desarrollo de plataforma) necesarios para que el modelo funcione."
+            },
+
+            // MÓDULO 3: Formalización y Contabilidad (12 Preguntas)
+            {
+                module: 3,
+                question: "¿Cuál es una diferencia fundamental entre Persona Natural y Persona Jurídica?",
+                options: [
+                    "La Persona Natural actúa con su RUT personal y compromete su patrimonio propio; la Jurídica es un ente ficticio con patrimonio propio.",
+                    "La Persona Jurídica no paga impuestos en Chile.",
+                    "La Persona Natural no puede emitir boletas de honorarios.",
+                    "La Persona Jurídica solo dura 1 año de existencia legal."
+                ],
+                answer: 0,
+                explanation: "La Persona Jurídica es una entidad legal distinta de los socios que la conforman, protegiendo en general el patrimonio personal de estos."
+            },
+            {
+                module: 3,
+                question: "¿Qué caracteriza a una Empresa Individual de Responsabilidad Limitada (E.I.R.L.) en Chile?",
+                options: [
+                    "Formada por 1 solo titular, con patrimonio separado de la persona natural y giro comercial acotado.",
+                    "Requiere obligatoriamente un mínimo de 2 socios y máximo 50.",
+                    "Cotiza sus acciones en la Bolsa de Comercio.",
+                    "No requiere constitución mediante escritura ni registro."
+                ],
+                answer: 0,
+                explanation: "La EIRL permite a un único dueño formalizar su negocio limitando su responsabilidad al capital aportado."
+            },
+            {
+                module: 3,
+                question: "¿Qué rasgo distintivo tiene la Sociedad por Acciones (SpA)?",
+                options: [
+                    "Flexibilidad societaria, puede tener desde 1 solo accionista y su capital se divide en acciones.",
+                    "Exige siempre un directorio de mínimo 5 personas.",
+                    "Todos los socios responden ilimitadamente con sus bienes personales.",
+                    "Es exclusiva para instituciones estatales."
+                ],
+                answer: 0,
+                explanation: "La SpA es muy popular en emprendimientos por su versatilidad: admite de 1 a múltiples accionistas y facilita la entrada de inversionistas."
+            },
+            {
+                module: 3,
+                question: "En la Sociedad de Responsabilidad Limitada (SRL o Ltda.), los socios:",
+                options: [
+                    "Responden hasta el monto de sus aportes y las decisiones requieren el acuerdo de todos los socios (unanimidad).",
+                    "Pueden vender libremente sus cuotas en la bolsa sin avisar a los demás.",
+                    "Deben ser obligatoriamente más de 50 personas.",
+                    "No necesitan RUT ni iniciar actividades en el SII."
+                ],
+                answer: 0,
+                explanation: "Las SRL limitan la responsabilidad al capital aportado y se basan en la confianza (mínimo 2, máximo 50 socios; ceder participación requiere unanimidad)."
+            },
+            {
+                module: 3,
+                question: "¿Qué es el Balance General en contabilidad?",
+                options: [
+                    "Un estado financiero que muestra la situación patrimonial (Activos, Pasivos y Patrimonio) a una fecha determinada.",
+                    "Un listado de los sueldos líquidos pagados en el mes.",
+                    "La proyección de ventas para los próximos 5 años.",
+                    "El comprobante de pago del IVA mensual."
+                ],
+                answer: 0,
+                explanation: "El Balance General es una 'fotografía' financiera que refleja qué tiene la empresa (Activo), qué debe (Pasivo) y su Capital (Patrimonio)."
+            },
+            {
+                module: 3,
+                question: "¿Cuál es la Ecuación Fundamental de la Contabilidad?",
+                options: [
+                    "ACTIVO = PASIVO + PATRIMONIO (CAPITAL)",
+                    "ACTIVO = INGRESOS - GASTOS",
+                    "PASIVO = ACTIVO + IVA",
+                    "CAPITAL = UTILIDAD * 19%"
+                ],
+                answer: 0,
+                explanation: "Todo lo que la empresa posee (Activos) ha sido financiado con deuda a terceros (Pasivos) o recursos propios (Patrimonio/Capital)."
+            },
+            {
+                module: 3,
+                question: "¿Cuál es la tasa vigente del Impuesto al Valor Agregado (IVA) en Chile?",
+                options: [
+                    "19%",
+                    "15%",
+                    "27%",
+                    "10%"
+                ],
+                answer: 0,
+                explanation: "En Chile, la tasa general del IVA que grava la venta de bienes y prestación de servicios es del 19%."
+            },
+            {
+                module: 3,
+                question: "Si un producto tiene un Valor Neto de $100.000, ¿cuál será su IVA y su Valor Total?",
+                options: [
+                    "IVA: $19.000 | Total: $119.000",
+                    "IVA: $10.000 | Total: $110.000",
+                    "IVA: $19.000 | Total: $100.000",
+                    "IVA: $81.000 | Total: $100.000"
+                ],
+                answer: 0,
+                explanation: "IVA = $100.000 * 0.19 = $19.000. Total = Neto + IVA = $100.000 + $19.000 = $119.000."
+            },
+            {
+                module: 3,
+                question: "Si el Valor Total (IVA incluido) de un bien es de $119.000, ¿cómo se calcula la base Neta?",
+                options: [
+                    "Dividiendo el Total por 1.19 ($119.000 / 1.19 = $100.000).",
+                    "Restando 19 directos a $119.000 ($118.981).",
+                    "Multiplicando el Total por 0.19.",
+                    "Dividiendo por 0.19."
+                ],
+                answer: 0,
+                explanation: "Para desglosar el Neto desde el Total con IVA incluido, se debe dividir el monto total entre 1.19."
+            },
+            {
+                module: 3,
+                question: "¿Qué es el Crédito Fiscal IVA?",
+                options: [
+                    "El IVA pagado por la empresa al comprar bienes o servicios necesarios para su giro.",
+                    "El IVA que la empresa le cobra a sus clientes finales.",
+                    "Un préstamo otorgado por el Banco Estado.",
+                    "El impuesto a la renta diferido."
+                ],
+                answer: 0,
+                explanation: "El IVA en compras es Crédito Fiscal; el IVA de ventas es Débito Fiscal. Al declarar (F29), se resta el Crédito del Débito."
+            },
+            {
+                module: 3,
+                question: "¿Qué documento legal formaliza la creación de una sociedad corporativa tradicional en el Registro de Empresas y Sociedades?",
+                options: [
+                    "La Escritura Pública o Estatuto redactado en la plataforma Tu Empresa en un Día.",
+                    "La boleta de compraventa diaria.",
+                    "La patente municipal temporal.",
+                    "El contrato individual de trabajo."
+                ],
+                answer: 0,
+                explanation: "La constitución requiere la redacción y firma de estatutos/escritura pública en notaría o mediante el sistema simplificado Tu Empresa en un Día."
+            },
+            {
+                module: 3,
+                question: "En el Balance General, las deudas con bancos e impuestos por pagar se clasifican como:",
+                options: [
+                    "Pasivos.",
+                    "Activos Circulantes.",
+                    "Patrimonio Neto.",
+                    "Ingresos Operacionales."
+                ],
+                answer: 0,
+                explanation: "Los Pasivos representan todas las obligaciones financieras y deudas contingentes de la entidad frente a terceros."
+            },
+
+            // MÓDULO 4: Marketing y Costos (12 Preguntas)
+            {
+                module: 4,
+                question: "¿Cuáles son los componentes tradicionales del Marketing Mix o las '4P'?",
+                options: [
+                    "Producto, Precio, Plaza (Distribución) y Promoción.",
+                    "Plan, Personal, Presupuesto y Producción.",
+                    "Patente, Pérdida, Ganancia y Postventa.",
+                    "Posicionamiento, Público, Propaganda y Papelería."
+                ],
+                answer: 0,
+                explanation: "Las 4P de E. Jerome McCarthy son: Producto, Precio, Plaza (Canales/Distribución) y Promoción (Comunicación/Publicidad)."
+            },
+            {
+                module: 4,
+                question: "En el Marketing Mix, la 'Plaza' se refiere a:",
+                options: [
+                    "Los canales, ubicaciones y métodos de distribución para poner el producto al alcance del comprador.",
+                    "La plaza pública donde se ubica la tienda central.",
+                    "El descuento porcentual aplicado en fechas festivas.",
+                    "La empaquetadura y diseño gráfico de la caja."
+                ],
+                answer: 0,
+                explanation: "Plaza (Place) comprende la logística, puntos de venta físicos o digitales e intermediarios de distribución."
+            },
+            {
+                module: 4,
+                question: "¿Qué define al 'Punto de Equilibrio' (Punto Muerto) en finanzas?",
+                options: [
+                    "El nivel de ventas donde los ingresos totales igualan exactamente a los costos totales (no hay ganancia ni pérdida).",
+                    "El momento en que el dueño recupera el 100% de la inversión inicial.",
+                    "El importe máximo de crédito que otorga el banco.",
+                    "El punto exacto donde los activos superan a los pasivos por el doble."
+                ],
+                answer: 0,
+                explanation: "En el Punto de Equilibrio (PE), Utilidad = 0. Ingresos = Costos Fijos + Costos Variables Totales."
+            },
+            {
+                module: 4,
+                question: "¿Cuál es la fórmula básica para calcular el Punto de Equilibrio en Unidades?",
+                options: [
+                    "Costos Fijos / (Precio de Venta Unitario - Costo Variable Unitario)",
+                    "Costos Totales * Tasa de IVA 19%",
+                    "Ingresos Totales / Costos Variables",
+                    "Precio de Venta * Cantidad Vendida"
+                ],
+                answer: 0,
+                explanation: "El denominador es el Margen de Contribución Unitario (Precio - CVU). Dividir Costos Fijos por este margen da las unidades a vender para no perder."
+            },
+            {
+                module: 4,
+                question: "¿Qué diferencia a los Costos Fijos de los Costos Variables?",
+                options: [
+                    "Los Fijos permanecen constantes sin importar el nivel de producción; los Variables cambian proporcionalmente al volumen producido.",
+                    "Los Fijos aumentan cuando la producción cae a cero.",
+                    "Los Variables corresponden únicamente al pago de arriendos.",
+                    "No hay diferencia; son categorías estéticas del contador."
+                ],
+                answer: 0,
+                explanation: "Costos Fijos (ej: arriendo, internet) se pagan produzca o no; Costos Variables (ej: insumos, envases) suben si aumenta la fabricación."
+            },
+            {
+                module: 4,
+                question: "¿Qué mide el Flujo de Caja (Cash Flow)?",
+                options: [
+                    "El registro de las entradas (ingresos) y salidas (egresos) efectivas de dinero durante un período.",
+                    "La diferencia entre activos no corrientes y patrimonio.",
+                    "La valoración comercial total de la marca en el mercado.",
+                    "El porcentaje de impuestos devengados sin pagar."
+                ],
+                answer: 0,
+                explanation: "El flujo de caja monitorea la liquidez real: la disponibilidad de dinero líquido que ingresa y egresa de las cuentas."
+            },
+            {
+                module: 4,
+                question: "Un Flujo de Caja con Saldo Neto positivo indica que:",
+                options: [
+                    "Los ingresos en efectivo superaron a los egresos en el período analizado.",
+                    "La empresa está en quiebra inminente.",
+                    "Los costos fijos fueron mayores que las ventas.",
+                    "Se debe pagar una multa al SII de inmediato."
+                ],
+                answer: 0,
+                explanation: "Un saldo positivo (excedente) demuestra liquidez adecuada para hacer frente a compromisos o reinvertir."
+            },
+            {
+                module: 4,
+                question: "Dentro de la 'P' de Promoción se incluyen actividades como:",
+                options: [
+                    "Publicidad, relaciones públicas, marketing digital y promociones de ventas.",
+                    "Determinación de márgenes de ganancia sobre costo.",
+                    "Selección de bodegas de almacenamiento.",
+                    "Redacción de contratos de trabajo."
+                ],
+                answer: 0,
+                explanation: "La Promoción abarca todos los esfuerzos de comunicación para dar a conocer el producto e persuadir a la compra."
+            },
+            {
+                module: 4,
+                question: "Si una empresa vende pasteles a $10.000 c/u, su costo variable por pastel es $6.000 y sus costos fijos mensuales son $400.000, ¿cuántos pasteles debe vender para equilibrar?",
+                options: [
+                    "100 pasteles.",
+                    "40 pasteles.",
+                    "400 pasteles.",
+                    "50 pasteles."
+                ],
+                answer: 0,
+                explanation: "Margen de contribución = $10.000 - $6.000 = $4.000. Punto de equilibrio = $400.000 / $4.000 = 100 pasteles."
+            },
+            {
+                module: 4,
+                question: "En el diseño de producto, la 'Marca' y el 'Packaging' corresponden a:",
+                options: [
+                    "Atributos tangibles e intangibles que identifican y protegen al Producto.",
+                    "Estrategias exclusivas de la P de Plaza.",
+                    "Costos no deducibles de impuestos.",
+                    "Elemento del Flujo de Financiamiento."
+                ],
+                answer: 0,
+                explanation: "Forman parte del nivel del Producto, aportando diferencación visual, valor percibido y funcionalidad."
+            },
+            {
+                module: 4,
+                question: "El concepto de 'Precio de Penetración' consiste en:",
+                options: [
+                    "Fijar un precio inicial bajo para ingresar rápidamente a un mercado y ganar cuota.",
+                    "Cobrar el precio más alto posible para clientes de lujo.",
+                    "Vender al costo exacto sin pagar IVA.",
+                    "Regalar el producto de por vida a los clientes."
+                ],
+                answer: 0,
+                explanation: "Es una estrategia de precios donde se ingresa con valores reducidos para atraer volumen masivo de consumidores."
+            },
+            {
+                module: 4,
+                question: "¿Cuál de los siguientes ítems es considerado un Egrese de Operación en el Flujo de Caja?",
+                options: [
+                    "Pago de salarios a trabajadores y compra de materias primas.",
+                    "Cobro de una venta con tarjeta de crédito.",
+                    "Aporte de capital de un nuevo socio.",
+                    "Obtención de un crédito a largo plazo."
+                ],
+                answer: 0,
+                explanation: "Los egresos operativos son los desembolsos de dinero requeridos en la rutina productiva y comercial."
+            },
+
+            // MÓDULO 5: Capital Humano y Previsión (12 Preguntas)
+            {
+                module: 5,
+                question: "¿Qué define el Artículo 7° del Código del Trabajo en Chile?",
+                options: [
+                    "El Contrato Individual de Trabajo como acuerdo donde trabajador y empleador se obligan recíprocamente.",
+                    "La jornada máxima de trabajo semanal.",
+                    "Las causales de despido sin indemnización.",
+                    "La creación del seguro de cesantía."
+                ],
+                answer: 0,
+                explanation: "El Art. 7° define el contrato de trabajo como convención por la cual el empleador y trabajador se obligan mutuamente (prestación bajo dependencia y pago de remuneración)."
+            },
+            {
+                module: 5,
+                question: "Según el Artículo 8° del Código del Trabajo, si existe prestación de servicios con subordinación y dependencia:",
+                options: [
+                    "Se presume legalmente la existencia de un contrato de trabajo, aunque las partes le den otra denominación.",
+                    "Se asume automáticamente que es un trabajo voluntario sin pago.",
+                    "El trabajador debe pagar sus propias imposiciones sin cargo al empleador.",
+                    "Es legalmente una boleta de honorarios imprescriptible."
+                ],
+                answer: 0,
+                explanation: "Prima el principio de primacía de la realidad: si hay subordinación, la ley presume que existe un vínculo laboral formal."
+            },
+            {
+                module: 5,
+                question: "¿Qué establece el Artículo 9° del Código del Trabajo respecto al plazo de escrituración del contrato?",
+                options: [
+                    "Debe consta por escrito en un plazo de 15 días desde la incorporación (o 5 días si es por obra o menos de 30 días).",
+                    "Tiene un plazo de 6 meses para firmarse.",
+                    "Solo se firma si el trabajador lo exige por escrito ante notario.",
+                    "Puede ser puramente verbal indefinidamente."
+                ],
+                answer: 0,
+                explanation: "El empleador tiene un plazo estricto de 15 días (o 5 en contratos por obra/breves) para formalizar por escrito el contrato bajo multa."
+            },
+            {
+                module: 5,
+                question: "¿Quién es considerado 'Empleador' según el Artículo 3° del Código del Trabajo?",
+                options: [
+                    "La persona natural o jurídica que utiliza los servicios intelectuales o materiales de uno o más trabajadores en virtud de un contrato.",
+                    "Cualquier profesional independiente que emita boletas.",
+                    "Únicamente el Gerente General de una S.A.",
+                    "El Ministerio del Trabajo y Previsión Social."
+                ],
+                answer: 0,
+                explanation: "El Art. 3 del Código define las figuras fundamentales: trabajador, empleador y empresa."
+            },
+            {
+                module: 5,
+                question: "En una liquidación de sueldo en Chile, ¿cuáles de los siguientes ítems corresponden a Haberes NO Imponibles?",
+                options: [
+                    "Asignación de Movilización, Colación y Viáticos.",
+                    "Sueldo Base y Horas Extraordinarias.",
+                    "Comisiones de venta y Gratificación legal.",
+                    "Bonos de productividad."
+                ],
+                answer: 0,
+                explanation: "Asignaciones como movilización, colación y gastos de herramientas no constituyen remuneración (no imponibles), reembolsan gastos de trabajo."
+            },
+            {
+                module: 5,
+                question: "El descuento obligatorio de cotización para el fondo de Pensiones (AFP) a cargo del trabajador es de:",
+                options: [
+                    "10% de la remuneración imponible (más la comisión variable de la AFP correspondiente).",
+                    "7% fijo.",
+                    "19% obligatorio.",
+                    "0.6% exclusivo."
+                ],
+                answer: 0,
+                explanation: "La cotización obligatoria en Chile para el fondo individual de vejez es el 10% imponible + la comisión de administración de cada AFP."
+            },
+            {
+                module: 5,
+                question: "¿Cuál es el porcentaje de descuento legal obligatorio destinado a la Salud (FONASA o ISAPRE)?",
+                options: [
+                    "7% de la remuneración imponible.",
+                    "10% del sueldo bruto.",
+                    "1.5% con tope de 5 UF.",
+                    "3% variable."
+                ],
+                answer: 0,
+                explanation: "El aporte obligatorio legal para salud a cargo del trabajador corresponde al 7% de sus haberes imponibles."
+            },
+            {
+                module: 5,
+                question: "En un contrato a plazo indefinido, la cotización para el Seguro de Cesantía (AFC) con cargo al TRABAJADOR es del:",
+                options: [
+                    "0,6% del sueldo imponible.",
+                    "2,4% del sueldo imponible.",
+                    "3,0% del sueldo imponible.",
+                    "0,0% (lo paga 100% el empleador)."
+                ],
+                answer: 0,
+                explanation: "En contratos indefinidos, el 3% total del seguro de cesantía se distribuye: 0.6% trabajador y 2.4% empleador."
+            },
+            {
+                module: 5,
+                question: "¿Qué es el Ahorro Previsional Voluntario (APV)?",
+                options: [
+                    "Mecanismo de ahorro adicional a la cotización obligatoria que otorga beneficios tributarios para mejorar la pensión.",
+                    "Depósito en efectivo que se realiza obligatoriamente en el Banco Central.",
+                    "Fondo para comprar acciones extranjeras sin pagar comisiones.",
+                    "Un seguro privado contra accidentes del trabajo."
+                ],
+                answer: 0,
+                explanation: "El APV permite a los trabajadores ahorrar voluntariamente por sobre el 10% legal, accediendo a bonificaciones fiscales o franquicias de impuestos."
+            },
+            {
+                module: 5,
+                question: "Institución pública chilena cuyo objetivo es fomentar el desarrollo de las micro y pequeñas empresas mediante capitales semilla y capacitaciones:",
+                options: [
+                    "SERCOTEC (Servicio de Cooperación Técnica)",
+                    "SII (Servicio de Impuestos Internos)",
+                    "DT (Dirección del Trabajo)",
+                    "CMF (Comisión para el Mercado Financiero)"
+                ],
+                answer: 0,
+                explanation: "SERCOTEC apoya a las micro y pequeñas empresas y emprendedores a través de fondos concursables como Capital Semilla y Abeja."
+            },
+            {
+                module: 5,
+                question: "¿Qué rol cumple CORFO (Corporación de Fomento de la Producción) en el ecosistema emprendedor?",
+                options: [
+                    "Promover la innovación, el emprendimiento de alto impacto (escalable) y el desarrollo tecnológico productivo.",
+                    "Fiscalizar las normas de seguridad en el trabajo.",
+                    "Emitir billetes y monedas nacionales.",
+                    "Otorgar créditos de consumo a personas naturales."
+                ],
+                answer: 0,
+                explanation: "CORFO impulsa proyectos de alta sofisticación, startups tecnológicas y financiamiento para el desarrollo productivo y la innovación."
+            },
+            {
+                module: 5,
+                question: "La institución de apoyo gubernamental orientada preferentemente al desarrollo de la agricultura familiar campesina e indios/rurales es:",
+                options: [
+                    "INDAP (Instituto de Desarrollo Agropecuario)",
+                    "FOSIS",
+                    "CORFO",
+                    "INJUV"
+                ],
+                answer: 0,
+                explanation: "INDAP promueve el desarrollo económico de los pequeños productores agrícolas y la agricultura familiar."
+            }
+        ];
+
+        // --- APP STATE ---
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let mode = 'practice'; // 'practice' | 'exam'
+        let selectedAnswers = {}; // questionIndex -> selectedOptionIndex
+        let bookmarkedQuestions = new Set();
+        let isReviewing = false;
+        let timerInterval = null;
+        let secondsElapsed = 0;
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            loadBookmarks();
+            restartQuiz();
+            initTheme();
+        };
+
+        function initTheme() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // --- QUIZ MANAGEMENT ---
+        function setMode(newMode) {
+            mode = newMode;
+            const btnPractice = document.getElementById('btnModePractice');
+            const btnExam = document.getElementById('btnModeExam');
+            const timerContainer = document.getElementById('timerContainer');
+
+            if (mode === 'practice') {
+                btnPractice.className = "py-2 px-3 rounded-xl text-xs font-semibold border transition flex items-center justify-center space-x-1.5 bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300";
+                btnExam.className = "py-2 px-3 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center justify-center space-x-1.5";
+                timerContainer.classList.add('hidden');
+                stopTimer();
+            } else {
+                btnExam.className = "py-2 px-3 rounded-xl text-xs font-semibold border transition flex items-center justify-center space-x-1.5 bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300";
+                btnPractice.className = "py-2 px-3 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center justify-center space-x-1.5";
+                timerContainer.classList.remove('hidden');
+            }
+            restartQuiz();
+        }
+
+        function restartQuiz() {
+            stopTimer();
+            secondsElapsed = 0;
+            updateTimerDisplay();
+            
+            const moduleVal = document.getElementById('moduleSelect').value;
+            let filtered = [];
+
+            if (moduleVal === 'all') {
+                filtered = [...rawQuestions];
+            } else {
+                const modNum = parseInt(moduleVal);
+                filtered = rawQuestions.filter(q => q.module === modNum);
+            }
+
+            // Shuffle options for each question without breaking the correct answer
+            currentQuestions = filtered.map((q, originalIdx) => {
+                const optionsWithOrig = q.options.map((opt, i) => ({ text: opt, isCorrect: i === q.answer }));
+                // Shuffle options array
+                const shuffledOpts = shuffleArray([...optionsWithOrig]);
+                const newCorrectIdx = shuffledOpts.findIndex(o => o.isCorrect);
+
+                return {
+                    id: originalIdx,
+                    module: q.module,
+                    question: q.question,
+                    options: shuffledOpts.map(o => o.text),
+                    answer: newCorrectIdx,
+                    explanation: q.explanation
+                };
+            });
+
+            currentIndex = 0;
+            selectedAnswers = {};
+            isReviewing = false;
+
+            document.getElementById('questionCard').classList.remove('hidden');
+            document.getElementById('resultsPanel').classList.add('hidden');
+
+            if (mode === 'exam') {
+                startTimer();
+            }
+
+            renderQuestion();
+            updateProgress();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- RENDER QUESTION ---
+        function renderQuestion() {
+            if (currentQuestions.length === 0) {
+                document.getElementById('questionText').innerText = "No se encontraron preguntas en este filtro.";
+                document.getElementById('optionsContainer').innerHTML = "";
+                return;
+            }
+
+            const q = currentQuestions[currentIndex];
+
+            // Module Badge
+            document.getElementById('moduleBadge').innerText = `Módulo ${q.module}`;
+            
+            // Question Text
+            document.getElementById('questionText').innerText = `${currentIndex + 1}. ${q.question}`;
+
+            // Bookmarked Icon State
+            updateBookmarkIconState();
+
+            // Options Container
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            const isAnswered = selectedAnswers.hasOwnProperty(currentIndex);
+            const selectedOpt = selectedAnswers[currentIndex];
+
+            q.options.forEach((optionText, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border transition flex items-start space-x-3 text-sm font-medium ";
+
+                let optClass = "border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 bg-slate-50/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200";
+
+                if (isAnswered) {
+                    if (mode === 'practice' || isReviewing) {
+                        if (optIdx === q.answer) {
+                            optClass = "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-semibold";
+                        } else if (optIdx === selectedOpt) {
+                            optClass = "border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200";
+                        } else {
+                            optClass = "border-slate-200 dark:border-slate-700 opacity-50 bg-slate-50 dark:bg-slate-900";
+                        }
+                    } else {
+                        // Exam mode before finishing
+                        if (optIdx === selectedOpt) {
+                            optClass = "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-semibold";
+                        } else {
+                            optClass = "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 opacity-70";
+                        }
+                    }
+                }
+
+                btn.className += optClass;
+
+                // Disable clicking if in practice mode and answered OR in review mode
+                if ((mode === 'practice' && isAnswered) || isReviewing) {
+                    btn.disabled = true;
+                } else {
+                    btn.onclick = () => selectOption(optIdx);
+                }
+
+                // Letter prefix
+                const letter = String.fromCharCode(65 + optIdx);
+                btn.innerHTML = `
+                    <span class="w-6 h-6 flex-shrink-0 rounded-lg border border-current flex items-center justify-center text-xs font-bold">${letter}</span>
+                    <span class="flex-1 mt-0.5">${optionText}</span>
+                `;
+
+                container.appendChild(btn);
+            });
+
+            // Feedback Box Handling
+            const feedbackBox = document.getElementById('feedbackBox');
+            if ((mode === 'practice' && isAnswered) || isReviewing) {
+                feedbackBox.classList.remove('hidden');
+                const isCorrect = selectedOpt === q.answer;
+
+                if (isCorrect) {
+                    feedbackBox.className = "mt-6 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200";
+                    document.getElementById('feedbackIcon').className = "fa-solid fa-circle-check text-emerald-500 text-xl mt-0.5";
+                    document.getElementById('feedbackTitle').innerText = "¡Respuesta Correcta!";
+                } else {
+                    feedbackBox.className = "mt-6 p-4 rounded-xl border border-rose-200 dark:border-rose-800/60 bg-rose-50/50 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200";
+                    document.getElementById('feedbackIcon').className = "fa-solid fa-circle-xmark text-rose-500 text-xl mt-0.5";
+                    document.getElementById('feedbackTitle').innerText = "Respuesta Incorrecta";
+                }
+                document.getElementById('feedbackExplanation').innerText = q.explanation;
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            // Buttons State
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+
+            const nextBtn = document.getElementById('nextBtn');
+            const finishExamBtn = document.getElementById('finishExamBtn');
+
+            if (currentIndex === currentQuestions.length - 1) {
+                if (mode === 'exam' && !isReviewing) {
+                    nextBtn.classList.add('hidden');
+                    finishExamBtn.classList.remove('hidden');
+                } else {
+                    nextBtn.classList.remove('hidden');
+                    finishExamBtn.classList.add('hidden');
+                }
+            } else {
+                nextBtn.classList.remove('hidden');
+                finishExamBtn.classList.add('hidden');
+            }
+
+            // Question counter
+            document.getElementById('questionCounter').innerText = `Pregunta ${currentIndex + 1} de ${currentQuestions.length}`;
+        }
+
+        // --- SELECTION HANDLER ---
+        function selectOption(optIdx) {
+            selectedAnswers[currentIndex] = optIdx;
+            renderQuestion();
+            updateProgress();
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            }
+        }
+
+        // --- PROGRESS & STATS ---
+        function updateProgress() {
+            const total = currentQuestions.length;
+            if (total === 0) return;
+
+            const answeredCount = Object.keys(selectedAnswers).length;
+            const percent = Math.round((answeredCount / total) * 100);
+
+            document.getElementById('progressBar').style.width = `${percent}%`;
+            document.getElementById('progressPercent').innerText = `${percent}%`;
+
+            // Calculate correct and incorrect
+            let correct = 0;
+            let incorrect = 0;
+
+            Object.keys(selectedAnswers).forEach(idxStr => {
+                const idx = parseInt(idxStr);
+                if (selectedAnswers[idx] === currentQuestions[idx].answer) {
+                    correct++;
+                } else {
+                    incorrect++;
+                }
+            });
+
+            document.getElementById('correctCount').innerText = correct;
+            document.getElementById('incorrectCount').innerText = incorrect;
+        }
+
+        // --- TIMER FUNCTIONALITY ---
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(secondsElapsed / 60);
+            const secs = secondsElapsed % 60;
+            const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            document.getElementById('timerText').innerText = formatted;
+        }
+
+        // --- EXAM FINISH & REPORT ---
+        function finishExam() {
+            stopTimer();
+            document.getElementById('questionCard').classList.add('hidden');
+            document.getElementById('resultsPanel').classList.remove('hidden');
+
+            const total = currentQuestions.length;
+            let correct = 0;
+
+            // Stats per module
+            const moduleStats = {
+                1: { correct: 0, total: 0, name: "Módulo 1: Fundamentos y Entorno" },
+                2: { correct: 0, total: 0, name: "Módulo 2: Planificación e Ideas" },
+                3: { correct: 0, total: 0, name: "Módulo 3: Formalización y Contabilidad" },
+                4: { correct: 0, total: 0, name: "Módulo 4: Marketing y Costos" },
+                5: { correct: 0, total: 0, name: "Módulo 5: Capital Humano y Previsión" }
+            };
+
+            currentQuestions.forEach((q, idx) => {
+                const mod = q.module;
+                if (moduleStats[mod]) moduleStats[mod].total++;
+
+                if (selectedAnswers[idx] === q.answer) {
+                    correct++;
+                    if (moduleStats[mod]) moduleStats[mod].correct++;
+                }
+            });
+
+            const scorePercent = Math.round((correct / total) * 100);
+
+            document.getElementById('finalScorePercent').innerText = `${scorePercent}%`;
+            document.getElementById('finalScoreCorrect').innerText = `${correct} / ${total}`;
+            document.getElementById('finalScoreTime').innerText = document.getElementById('timerText').innerText;
+
+            // Icon & Subtitle according to score
+            const resIcon = document.getElementById('resultIcon');
+            const resSub = document.getElementById('resultSubtitle');
+
+            if (scorePercent >= 70) {
+                resIcon.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/60 dark:text-emerald-400";
+                resIcon.innerHTML = `<i class="fa-solid fa-trophy"></i>`;
+                resSub.innerText = "¡Excelente Trabajo! Tienes un dominio sólido de la materia.";
+            } else if (scorePercent >= 50) {
+                resIcon.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl bg-amber-100 text-amber-600 dark:bg-amber-900/60 dark:text-amber-400";
+                resIcon.innerHTML = `<i class="fa-solid fa-medal"></i>`;
+                resSub.innerText = "Buen intento, pero se recomienda repasar los módulos débiles.";
+            } else {
+                resIcon.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl bg-rose-100 text-rose-600 dark:bg-rose-900/60 dark:text-rose-400";
+                resIcon.innerHTML = `<i class="fa-solid fa-book-open"></i>`;
+                resSub.innerText = "Necesitas estudiar más antes de rendir la evaluación real.";
+            }
+
+            // Render module breakdown
+            const statsContainer = document.getElementById('moduleStatsContainer');
+            statsContainer.innerHTML = '';
+
+            Object.keys(moduleStats).forEach(modKey => {
+                const st = moduleStats[modKey];
+                if (st.total > 0) {
+                    const modPct = Math.round((st.correct / st.total) * 100);
+                    const div = document.createElement('div');
+                    div.className = "p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex flex-col justify-between";
+                    div.innerHTML = `
+                        <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+                            <span class="text-slate-700 dark:text-slate-300 truncate max-w-[200px]">${st.name}</span>
+                            <span class="${modPct >= 70 ? 'text-emerald-500' : 'text-amber-500'}">${st.correct}/${st.total} (${modPct}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="${modPct >= 70 ? 'bg-emerald-500' : 'bg-amber-500'} h-1.5 rounded-full" style="width: ${modPct}%"></div>
+                        </div>
+                    `;
+                    statsContainer.appendChild(div);
+                }
+            });
+        }
+
+        function toggleReviewMode() {
+            isReviewing = true;
+            document.getElementById('resultsPanel').classList.add('hidden');
+            document.getElementById('questionCard').classList.remove('hidden');
+            currentIndex = 0;
+            renderQuestion();
+        }
+
+        // --- BOOKMARKS / FAVORITES ---
+        function loadBookmarks() {
+            const saved = localStorage.getItem('ei_bookmarked_questions');
+            if (saved) {
+                try {
+                    bookmarkedQuestions = new Set(JSON.parse(saved));
+                } catch(e) {
+                    bookmarkedQuestions = new Set();
+                }
+            }
+            updateBookmarkBadge();
+        }
+
+        function saveBookmarks() {
+            localStorage.setItem('ei_bookmarked_questions', JSON.stringify([...bookmarkedQuestions]));
+            updateBookmarkBadge();
+        }
+
+        function toggleBookmarkCurrent() {
+            if (currentQuestions.length === 0) return;
+            const q = currentQuestions[currentIndex];
+
+            if (bookmarkedQuestions.has(q.question)) {
+                bookmarkedQuestions.delete(q.question);
+            } else {
+                bookmarkedQuestions.add(q.question);
+            }
+            saveBookmarks();
+            updateBookmarkIconState();
+        }
+
+        function updateBookmarkIconState() {
+            if (currentQuestions.length === 0) return;
+            const q = currentQuestions[currentIndex];
+            const icon = document.getElementById('bookmarkIcon');
+
+            if (bookmarkedQuestions.has(q.question)) {
+                icon.className = "fa-solid fa-bookmark text-amber-500";
+            } else {
+                icon.className = "fa-regular fa-bookmark";
+            }
+        }
+
+        function updateBookmarkBadge() {
+            const badge = document.getElementById('bookmarkBadge');
+            badge.innerText = bookmarkedQuestions.size;
+            if (bookmarkedQuestions.size > 0) {
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function toggleBookmarkedFilter() {
+            if (bookmarkedQuestions.size === 0) {
+                alert("Aún no has guardado ninguna pregunta para repasar. Haz clic en el ícono de marcador en cualquier pregunta.");
+                return;
+            }
+
+            // Filter raw questions that are bookmarked
+            const filtered = rawQuestions.filter(q => bookmarkedQuestions.has(q.question));
+            
+            currentQuestions = filtered.map((q, originalIdx) => {
+                const optionsWithOrig = q.options.map((opt, i) => ({ text: opt, isCorrect: i === q.answer }));
+                const shuffledOpts = shuffleArray([...optionsWithOrig]);
+                const newCorrectIdx = shuffledOpts.findIndex(o => o.isCorrect);
+
+                return {
+                    id: originalIdx,
+                    module: q.module,
+                    question: q.question,
+                    options: shuffledOpts.map(o => o.text),
+                    answer: newCorrectIdx,
+                    explanation: q.explanation
+                };
+            });
+
+            currentIndex = 0;
+            selectedAnswers = {};
+            isReviewing = false;
+
+            document.getElementById('questionCard').classList.remove('hidden');
+            document.getElementById('resultsPanel').classList.add('hidden');
+
+            renderQuestion();
+            updateProgress();
+        }
+    </script>
+</body>
+</html>
